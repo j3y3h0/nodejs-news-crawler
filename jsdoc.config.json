@@ -1,0 +1,21 @@
+{
+  "source": {
+    "include": ["index.js", "src/", "README.md"],
+    "includePattern": "\\.(js|jsx)$",
+    "exclude": ["node_modules/", "docs/", "prisma/migrations/"]
+  },
+  "opts": {
+    "destination": "./docs/",
+    "recurse": true,
+    "readme": "./README.md"
+  },
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false
+  },
+  "metadata": {
+    "title": "네이버 뉴스 크롤러 API 문서",
+    "description": "네이버 뉴스를 크롤링하여 데이터베이스에 저장하고 REST API를 제공하는 Node.js 애플리케이션"
+  }
+}
