@@ -1,6 +1,6 @@
 # 네이버 뉴스 크롤러
 
-네이버 뉴스 메인 페이지에서 뉴스를 크롤링하여 MySQL 데이터베이스에 저장하는 Node.js 애플리케이션입니다.
+네이버 뉴스 메인 페이지에서 뉴스를 크롤링하여 MySQL 데이터베이스에 저장하는 Node.js 애플리케이션
 
 ## 주요 기능
 
@@ -71,7 +71,7 @@ npm install
 
 ### 3. 환경 변수 설정
 
-`.env` 파일을 수정하여 데이터베이스 연결 정보를 입력하세요:
+`.env` 파일을 수정하여 데이터베이스 연결 정보를 입력
 
 ```env
 DATABASE_URL="mysql://username:password@localhost:3306/news_crawler"
@@ -125,7 +125,7 @@ npm start
 
 ## 스케줄링 설정
 
-애플리케이션은 환경 변수 `CRAWL_INTERVAL_HOURS`에 설정된 간격으로 자동 크롤링을 실행합니다.
+애플리케이션은 환경 변수 `CRAWL_INTERVAL_HOURS`에 설정된 간격으로 자동 크롤링을 실
 
 - 기본값: 1시간마다
 - 크론 표현식: `0 */1 * * *`
@@ -161,19 +161,7 @@ npm run db:studio    # Prisma Studio 실행
 
 ## 주의사항
 
-1. **데이터베이스 설정**: MySQL 데이터베이스가 실행 중이어야 합니다.
-2. **환경 변수**: `.env` 파일에 올바른 데이터베이스 연결 정보를 입력해야 합니다.
-3. **크롤링 정책**: 네이버의 robots.txt와 이용약관을 준수해야 합니다.
-4. **요청 제한**: 과도한 요청으로 인한 IP 차단을 방지하기 위해 적절한 딜레이를 설정하세요.
-
-## 라이선스
-
-ISC License
-
-## 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch
-3. Commit your Changes
-4. Push to the Branch
-5. Open a Pull Request
+1. **데이터베이스 설정**: MySQL 데이터베이스 필요
+2. **환경 변수**: `.env` 파일에 올바른 데이터베이스 연결 정보를 입력
+3. **크롤링 정책**: 네이버의 robots.txt와 이용약관을 준수
+4. **요청 제한**: 과도한 요청으로 인한 IP 차단을 방지하기 위해 적절한 딜레이를 설정
