@@ -24,6 +24,7 @@ class NewsService {
    */
   async saveMainNews(newsData) {
     try {
+      const { getCurrentIsoTime } = require('../utils/commonUtils');
       const news = await this.prisma.news_main.create({
         data: {
           title_ct: newsData.title,
@@ -31,7 +32,9 @@ class NewsService {
           image_lk: newsData.imageUrl,
           summary_ct: newsData.summary,
           category_nm: newsData.category,
-          published_dt: newsData.publishedAt || new Date(),
+          published_dt: newsData.publishedAt || getCurrentIsoTime(),
+          crawled_dt: getCurrentIsoTime(),
+          updated_dt: getCurrentIsoTime(),
         },
       });
 
@@ -52,6 +55,7 @@ class NewsService {
    */
   async saveNewsDetail(mainNewsId, detailData) {
     try {
+      const { getCurrentIsoTime } = require('../utils/commonUtils');
       const detail = await this.prisma.news_detail.create({
         data: {
           news_se: mainNewsId,
@@ -62,6 +66,8 @@ class NewsService {
           view_va: detailData.viewCount || 0,
           like_va: detailData.likeCount || 0,
           comment_va: detailData.commentCount || 0,
+          reg_dt: getCurrentIsoTime(),
+          updated_dt: getCurrentIsoTime(),
         },
       });
 

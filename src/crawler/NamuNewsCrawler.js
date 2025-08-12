@@ -5,6 +5,7 @@
 
 const cheerio = require('cheerio');
 const BaseCrawler = require('./BaseCrawler');
+const { getCurrentIsoTime } = require('../utils/commonUtils');
 
 /**
  * 나무뉴스 크롤러 클래스
@@ -200,12 +201,24 @@ class NamuNewsCrawler extends BaseCrawler {
         // "더보기" 등 불필요 항목 제외
         if (/더보기|로그인|시사\s*$/.test(rawText)) return;
 
-        // 날짜 추출 (YYYY-MM-DD)
-        const dateMatch = rawText.match(/(20\d{2}-\d{2}-\d{2})/);
-        let publishedAt = new Date();
-        if (dateMatch) {
-          const parsed = new Date(dateMatch[1]);
-          if (!isNaN(parsed.getTime())) publishedAt = parsed;
+        // 게시 날짜: a 내부 구조 (span[title=YYYY-MM-DD]) 우선, 없으면 텍스트 패턴
+        let publishedAt = getCurrentIsoTime();
+        const dateSpan = $a
+          .parent()
+          .find('span[title], time[datetime]')
+          .first();
+        let dateStr = '';
+        if (dateSpan.length) {
+          dateStr = dateSpan.attr('title') || dateSpan.attr('datetime') || '';
+        }
+        if (!dateStr) {
+          const textDate = rawText.match(/(20\d{2}-\d{2}-\d{2})/);
+          if (textDate) dateStr = textDate[1];
+        }
+        if (dateStr) {
+          const parts = dateStr.split(' ')[0]; // 날짜만
+          const d = new Date(parts + 'T00:00:00+09:00');
+          if (!isNaN(d.getTime())) publishedAt = d; // KST 자정 시간
         }
         // 제목/제공처 prefix 정규화
         rawText = this.normalizeTitleProvider(rawText);
@@ -248,7 +261,7 @@ class NamuNewsCrawler extends BaseCrawler {
               imageUrl: null,
               summary: t,
               category: categoryName,
-              publishedAt: new Date(),
+              publishedAt: getCurrentIsoTime(),
             });
           }
         );

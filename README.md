@@ -59,8 +59,6 @@ namu.news 사이트의 여러 카테고리(IT/과학, 세계, 문화, 사회, �
 - `started_dt`
 - `finished_dt`
 
-추가적으로 `news_category`, `news_tag`, `news_tag_mapping` 모델이 정의되어 있으나 현재 로직은 태그 문자열 저장 방식(tags_ct) 사용.
-
 ## 설치 및 실행
 
 ### 1. 저장소 클론

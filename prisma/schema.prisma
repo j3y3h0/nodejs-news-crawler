@@ -40,29 +40,6 @@ model news_detail {
   @@index([source_nm])
 }
 
-model news_category {
-  category_se   Int      @id @default(autoincrement())
-  category_nm   String   @unique @db.VarChar(100)
-  category_desc String?  @db.Text
-  condition_cd  Int      @default(1) @db.TinyInt
-  reg_dt        DateTime @default(now())
-}
-
-model news_tag {
-  tag_se       Int      @id @default(autoincrement())
-  tag_nm       String   @unique @db.VarChar(100)
-  condition_cd Int      @default(1) @db.TinyInt
-  reg_dt       DateTime @default(now())
-}
-
-model news_tag_mapping {
-  news_se Int
-  tag_se  Int
-  reg_dt  DateTime @default(now())
-
-  @@id([news_se, tag_se])
-}
-
 model news_crawl_log {
   crawl_log_se Int       @id @default(autoincrement())
   status_cd    String    @db.VarChar(50)
