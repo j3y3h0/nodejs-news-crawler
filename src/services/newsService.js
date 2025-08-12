@@ -68,6 +68,18 @@ class NewsService {
       console.log(`뉴스 상세 저장 완료: ID ${mainNewsId}`);
       return detail;
     } catch (error) {
+      // 동시성(실시간 상세 크롤 + 백필)으로 인한 중복 생성 시도 처리
+      if (error.code === 'P2002') {
+        console.log(`뉴스 상세 중복 스킵: news_se=${mainNewsId}`);
+        // 이미 존재하는 상세를 반환 (필요 시 null 로 단순 무시 가능)
+        try {
+          return await this.prisma.news_detail.findUnique({
+            where: { news_se: mainNewsId },
+          });
+        } catch (_) {
+          return null;
+        }
+      }
       console.error('뉴스 상세 저장 에러:', error);
       throw error;
     }
@@ -312,6 +324,28 @@ class NewsService {
     } catch (error) {
       console.error('오래된 뉴스 삭제 에러:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 상세 미존재 메인 뉴스 조회 (url_lk 기반 상세 크롤링 대상)
+   * @param {number} limit - 최대 조회 수
+   * @returns {Promise<Array>} news_main 레코드 배열
+   */
+  async getMainNewsWithoutDetail(limit = 20) {
+    try {
+      // 효율적 조회를 위해 LEFT JOIN 사용 (raw query)
+      const rows = await this.prisma.$queryRaw`
+        SELECT m.* FROM news_main m
+        LEFT JOIN news_detail d ON m.news_se = d.news_se
+        WHERE d.news_se IS NULL
+        ORDER BY m.published_dt DESC
+        LIMIT ${limit}
+      `;
+      return rows;
+    } catch (error) {
+      console.error('상세 미존재 메인 뉴스 조회 에러:', error);
+      return [];
     }
   }
 }
