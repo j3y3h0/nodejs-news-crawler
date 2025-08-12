@@ -1,6 +1,6 @@
 /**
- * @fileoverview 네이버 뉴스 크롤러 클래스
- * @description 네이버 뉴스 웹사이트에서 뉴스 데이터를 크롤링하고 데이터베이스에 저장하는 기능을 제공합니다.
+ * @fileoverview (Deprecated) 네이버 뉴스 크롤러 클래스
+ * @description 현재 애플리케이션은 namu.news 기반 `NamuNewsCrawler`를 사용합니다. 이 파일은 참고용으로만 유지됩니다.
  */
 
 const axios = require('axios');

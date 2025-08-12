@@ -1,6 +1,6 @@
 /**
- * @fileoverview 네이버 뉴스 크롤러 메인 애플리케이션
- * @description 네이버 뉴스를 크롤링하여 MySQL 데이터베이스에 저장하고 REST API를 제공하는 Node.js 애플리케이션
+ * @fileoverview 나무뉴스 크롤러 메인 애플리케이션
+ * @description namu.news 뉴스를 크롤링하여 MySQL 데이터베이스에 저장하고 REST API를 제공하는 Node.js 애플리케이션
  * @version 1.0.0
  * @author News Crawler Team
  */
@@ -11,7 +11,8 @@ const dotenv = require('dotenv');
 const { PrismaClient } = require('@prisma/client');
 
 // 서비스 및 크롤러 모듈
-const NewsCrawler = require('./src/crawler/newsCrawler');
+// (기존 네이버 크롤러 -> 나무뉴스 크롤러로 교체)
+const NamuNewsCrawler = require('./src/crawler/NamuNewsCrawler');
 const NewsService = require('./src/services/newsService');
 
 // 컨트롤러 및 라우터 모듈
@@ -47,10 +48,10 @@ const prisma = new PrismaClient();
 const newsService = new NewsService(prisma);
 
 /**
- * 뉴스 크롤러 인스턴스
- * @type {NewsCrawler}
+ * 뉴스 크롤러 인스턴스 (namu.news)
+ * @type {NamuNewsCrawler}
  */
-const newsCrawler = new NewsCrawler(newsService);
+const newsCrawler = new NamuNewsCrawler(newsService);
 
 /**
  * 뉴스 컨트롤러 인스턴스

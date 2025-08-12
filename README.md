@@ -1,6 +1,6 @@
-# 네이버 뉴스 크롤러
+# 나무뉴스 크롤러 (namu.news)
 
-네이버 뉴스 메인 페이지에서 뉴스를 크롤링하여 MySQL 데이터베이스에 저장하는 Node.js 애플리케이션
+namu.news 사이트의 여러 카테고리(IT/과학, 세계, 문화, 사회, 경제, 정치, 시사일반)를 크롤링하여 MySQL 데이터베이스에 저장하고 REST API로 제공합니다. 기존 네이버 전용 크롤러 구조를 OOP(템플릿/전략) 형태로 리팩토링하여 다른 소스 추가가 용이합니다.
 
 ## 주요 기능
 
@@ -21,38 +21,45 @@
 - **Caching**: Node Cache
 - **Development**: Nodemon, Prettier
 
-## 데이터베이스 구조
+## 데이터베이스 구조 (snake_case, FK 제거)
 
-### 메인 뉴스 테이블 (main_news)
+실제 Prisma 모델명과 컬럼 (요약):
 
-- `id`: 기본키
-- `title`: 뉴스 제목
-- `url`: 뉴스 URL (고유)
-- `imageUrl`: 썸네일 이미지 URL
-- `summary`: 뉴스 요약
-- `category`: 뉴스 카테고리
-- `publishedAt`: 발행 시간
-- `crawledAt`: 크롤링 시간
+### news_main
 
-### 뉴스 상세 테이블 (news_detail)
+- `news_se` (PK)
+- `title_ct` (제목)
+- `url_lk` (원문 링크, Unique)
+- `image_url_ct` (이미지 URL)
+- `summary_ct`
+- `category_nm`
+- `published_dt`
+- `crawled_dt`
 
-- `id`: 기본키
-- `mainNewsId`: 메인 뉴스 외래키
-- `content`: 뉴스 본문
-- `author`: 기자명
-- `source`: 언론사
-- `tags`: 태그
-- `viewCount`: 조회수
-- `likeCount`: 좋아요 수
-- `commentCount`: 댓글 수
+### news_detail
 
-### 크롤링 로그 테이블 (crawl_log)
+- `detail_se` (PK)
+- `news_se` (메인 참조용 값 - FK 미구현)
+- `content_ct`
+- `author_nm`
+- `source_nm`
+- `tags_ct`
+- `view_count_nb`
+- `like_count_nb`
+- `comment_count_nb`
+- `crawled_dt`
 
-- `id`: 기본키
-- `status`: 크롤링 상태
-- `message`: 메시지
-- `itemCount`: 처리된 아이템 수
-- `duration`: 소요 시간
+### news_crawl_log
+
+- `crawl_log_se` (PK)
+- `status_cd` (started|success|error)
+- `message_ct`
+- `item_count_nb`
+- `duration_ms_nb`
+- `started_dt`
+- `finished_dt`
+
+추가적으로 `news_category`, `news_tag`, `news_tag_mapping` 모델이 정의되어 있으나 현재 로직은 태그 문자열 저장 방식(tags_ct) 사용.
 
 ## 설치 및 실행
 
@@ -137,21 +144,36 @@ npm start
 
 ## 개발 정보
 
-### 프로젝트 구조
+### 프로젝트 구조 (발췌)
 
 ```
 ├── src/
 │   ├── crawler/
-│   │   └── newsCrawler.js     # 뉴스 크롤링 로직
+│   │   ├── BaseCrawler.js        # 공통 추상 크롤러 (템플릿 메서드)
+│   │   ├── NamuNewsCrawler.js    # namu.news 구현체 (현재 사용)
+│   │   └── newsCrawler.js        # (구) Naver 전용 - 미사용, 참고용
+│   ├── controllers/
+│   │   └── newsController.js
+│   ├── routes/
+│   │   ├── baseRoutes.js
+│   │   └── newsRoutes.js
 │   └── services/
-│       └── newsService.js     # 데이터베이스 서비스
+│       └── newsService.js
 ├── prisma/
-│   └── schema.prisma          # 데이터베이스 스키마
-├── index.js                   # 메인 애플리케이션 파일
-├── package.json
-├── .env                       # 환경 변수
+│   └── schema.prisma
+├── index.js
 └── README.md
 ```
+
+### OOP 구조 개요
+
+1. `BaseCrawler` : 공통 로직 (필터링, 상세 저장, 캐시, 지연) 제공
+2. `NamuNewsCrawler` : 카테고리 URL / 선택자 / 파싱 로직 구현
+3. 추후 다른 소스(예: Naver, RSS 등) 추가 시 `BaseCrawler` 상속 신규 클래스만 작성
+
+### 메서드 흐름
+
+`crawlNews()` → 카테고리 순회 → `crawlCategoryNews()`로 기사 리스트 확보 → 신규 URL 필터 → 저장 → 비동기 `crawlAndSaveDetailNews()`가 `crawlNewsDetail()` 호출하여 상세 저장.
 
 ### 주요 패키지 명령어
 
@@ -168,5 +190,14 @@ npm run db:studio    # Prisma Studio 실행
 
 1. **데이터베이스 설정**: MySQL 데이터베이스 필요
 2. **환경 변수**: `.env` 파일에 올바른 데이터베이스 연결 정보를 입력
-3. **크롤링 정책**: 네이버의 robots.txt와 이용약관을 준수
-4. **요청 제한**: 과도한 요청으로 인한 IP 차단을 방지하기 위해 적절한 딜레이를 설정
+3. **크롤링 정책**: 대상 사이트(namu.news)의 robots.txt / 이용약관 확인 후 사용
+4. **요청 제한**: 카테고리 순회 간 `delay`(기본 800ms) 삽입; 필요 시 환경 변수화 권장
+5. **확장성**: 새 소스 추가 시 `BaseCrawler` 상속 클래스로 최소 수정 반경 유지
+
+## 향후 개선 아이디어
+
+- 태그/카테고리 테이블 활용 및 매핑 저장 로직 활성화
+- 중복 기사 유사도(제목 유사도) 검사
+- 상세 페이지 실패 재시도 큐
+- OpenSearch/Elastic 연동으로 검색 API 추가
+- Jest 기반 단위/통합 테스트 추가
