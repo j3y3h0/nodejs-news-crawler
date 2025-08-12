@@ -117,14 +117,14 @@ async function startServer() {
     console.log('✅ 데이터베이스 연결 성공');
 
     // Express 서버 시작
-    // app.listen(port, () => {
-    //   console.log(`🚀 서버가 포트 ${port}에서 실행 중입니다.`);
-    //   console.log(`🌐 http://localhost:${port}`);
-    //   console.log(`📊 헬스체크: http://localhost:${port}/health`);
-    //   console.log(`📰 뉴스 API: http://localhost:${port}/api/news`);
-    //   console.log(`🕷️ 크롤링 API: http://localhost:${port}/api/crawl`);
-    //   console.log(`📈 통계 API: http://localhost:${port}/api/stats`);
-    // });
+    app.listen(port, () => {
+      console.log(`🚀 서버가 포트 ${port}에서 실행 중입니다.`);
+      console.log(`🌐 http://localhost:${port}`);
+      console.log(`📊 헬스체크: http://localhost:${port}/health`);
+      console.log(`📰 뉴스 API: http://localhost:${port}/api/news`);
+      console.log(`🕷️ 크롤링 API: http://localhost:${port}/api/crawl`);
+      console.log(`📈 통계 API: http://localhost:${port}/api/stats`);
+    });
 
     // 애플리케이션 시작 시 초기 크롤링 실행 (비동기)
     console.log('🕷️ 초기 크롤링 시작...');
