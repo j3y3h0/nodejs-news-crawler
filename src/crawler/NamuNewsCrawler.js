@@ -32,6 +32,13 @@ class NamuNewsCrawler extends BaseCrawler {
       { url: 'https://namu.news/news/news/politics', category: '정치' },
       { url: 'https://namu.news/news/news/news-general', category: '시사일반' },
     ];
+
+    // 환경 설정 (env 기반)
+    this.maxPerCategory = parseInt(process.env.MAX_NEWS_PER_CATEGORY) || 25;
+    this.requestDelayMs = parseInt(process.env.REQUEST_DELAY_MS) || 800;
+    this.duplicateLogInterval = 10; // 중복 로그 rate-limit
+    this.duplicateSkipCount = 0;
+    this.duplicateSkipSilenced = 0;
   }
 
   /**
@@ -59,7 +66,7 @@ class NamuNewsCrawler extends BaseCrawler {
               `[${this.getName()}] ${cat.category}: ${categoryArticles.length}건 수집`
             );
           }
-          await this.delay(800); // 과도한 요청 방지
+          await this.delay(this.requestDelayMs); // 과도한 요청 방지
         } catch (err) {
           console.error(
             `[${this.getName()}] ${cat.category} 카테고리 에러:`,
@@ -230,8 +237,17 @@ class NamuNewsCrawler extends BaseCrawler {
    */
   async crawlNewsDetail(articleUrl) {
     try {
-      const response = await this.httpClient.get(articleUrl);
-      const $ = cheerio.load(response.data);
+      let attempt = 0;
+      const maxAttempts = 2;
+      let response;
+      let $;
+      while (attempt < maxAttempts) {
+        attempt++;
+        response = await this.httpClient.get(articleUrl);
+        $ = cheerio.load(response.data);
+        if ($('body').text().length > 200 || attempt === maxAttempts) break;
+        await this.delay(300 + attempt * 200); // 재시도 지연
+      }
 
       let content = '';
       const contentSelectors = [
@@ -247,14 +263,24 @@ class NamuNewsCrawler extends BaseCrawler {
 
       for (const sel of contentSelectors) {
         const el = $(sel);
-        if (el.length) {
-          content = el
-            .text()
-            .trim()
-            .replace(/\n\s*\n/g, '\n')
-            .trim();
-          if (content.length > 50) break;
-        }
+        if (!el.length) continue;
+        const text = el
+          .text()
+          .replace(/\n\s*\n/g, '\n')
+          .trim();
+        if (text && text.length > content.length) content = text;
+        if (content.length > 300) break;
+      }
+
+      // 백업: 문단 수집
+      if (content.length < 80) {
+        const paragraphs = [];
+        $('p').each((i, el) => {
+          const t = $(el).text().trim();
+          if (t.length > 20 && !/^(\[|▶)/.test(t)) paragraphs.push(t);
+          if (paragraphs.length >= 8) return false;
+        });
+        if (paragraphs.length) content = paragraphs.join('\n');
       }
 
       // 기자 / 출처 (나무뉴스 자체 서비스라 간단화)
