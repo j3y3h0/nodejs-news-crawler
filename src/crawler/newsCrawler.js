@@ -219,17 +219,14 @@ class NewsCrawler {
       console.log(`메인 페이지에서 ${newsItems.length}개 뉴스 수집`);
 
       // 실제 크롤링에서 결과가 없으면 모의 데이터 사용
-      if (newsItems.length === 0) {
-        console.log('실제 크롤링 결과가 없어 모의 데이터를 사용합니다.');
-        return this.generateMockNews();
-      }
+      // if (newsItems.length === 0) {
+      //   console.log('실제 크롤링 결과가 없어 모의 데이터를 사용합니다.');
+      //   return this.generateMockNews();
+      // }
 
       return newsItems;
     } catch (error) {
       console.error('메인 페이지 크롤링 에러:', error.message);
-      // 에러 발생 시 모의 데이터 반환
-      console.log('모의 데이터로 대체합니다.');
-      return this.generateMockNews();
     }
   }
 
@@ -239,7 +236,7 @@ class NewsCrawler {
   async crawlCategoryNews(rssUrl) {
     try {
       // RSS는 XML 파싱이 필요하므로 여기서는 모의 데이터 반환
-      return this.generateMockNews();
+      // return this.generateMockNews();
     } catch (error) {
       console.error('카테고리 뉴스 크롤링 에러:', error);
       return [];

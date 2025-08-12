@@ -86,12 +86,17 @@ CACHE_TTL_SECONDS=3600
 ### 4. 데이터베이스 설정
 
 ```bash
-# Prisma 클라이언트 생성
-npm run db:generate
+npx prisma init
 
-# 데이터베이스 마이그레이션
-npm run db:migrate
+# DB 동기화 명령어들
+npx prisma db push
+npx prisma db pull
+npx prisma generate
+
+npx prisma migrate dev --name migration
 ```
+
+````
 
 ### 5. 애플리케이션 실행
 
@@ -101,7 +106,7 @@ npm run dev
 
 # 프로덕션 모드
 npm start
-```
+````
 
 ## API 엔드포인트
 
